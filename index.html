@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0818">
+<title>AURORA Authenticator</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #0b0818;
+    --panel: rgba(35,18,43,.68);
+    --accent: #ff80c8;
+    --accent2: #9b8cff;
+    --text: #f3f7ff;
+    --muted: #a99bbf;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+button, input {
+    font: inherit;
+}
+
+/* ORIGINAL AURORA BACKGROUND */
+
+.ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: linear-gradient(
+        140deg, #210f2b, #101126, #0a1424
+    );
+}
+
+.ambient::before,
+.ambient::after {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    pointer-events: none;
+}
+
+.ambient::before {
+    background:
+        radial-gradient(
+            circle at 20% 30%,
+            #ff80c8 0, transparent 22%
+        ),
+        radial-gradient(
+            circle at 80% 70%,
+            #9b8cff 0, transparent 25%
+        ),
+        radial-gradient(
+            circle at 50% 50%,
+            #5a7dff 0, transparent 32%
+        );
+    filter: blur(65px);
+    opacity: .24;
+    animation: drift 5s ease-in-out infinite alternate;
+}
+
+.ambient::after {
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(255,128,200,.10),
+            transparent 55%
+        );
+    animation: glow 8s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+    from {
+        transform: translate(3%, -2%) scale(1);
+    }
+    to {
+        transform: translate(-4%, 4%) scale(1.18);
+    }
+}
+
+@keyframes glow {
+    from { opacity: .4; }
+    to { opacity: 1; }
+}
+
+/* ORIGINAL MAIN CARD */
+
+.container {
+    width: min(365px, 100%);
+    max-height: calc(100dvh - 40px);
+    padding: 29px 26px;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid rgba(255,128,200,.35);
+    border-radius: 30px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+        0 30px 90px rgba(0,0,0,.5),
+        0 0 45px rgba(155,140,255,.09);
+    animation: appear .75s cubic-bezier(.2,.8,.2,1) both;
+    scrollbar-width: none;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(22px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ORIGINAL TOP LIGHT SHINE */
+
+.container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--accent),
+        var(--accent2),
+        transparent
+    );
+    animation: shine 3s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes shine {
+    to { left: 100%; }
+}
+
+/* ORIGINAL FLOWER LOGO */
+
+.brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 21px;
+}
+
+.logo {
+    width: 57px;
+    height: 57px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--accent);
+    border-radius: 50% 50% 45% 15%;
+    color: var(--accent);
+    font-size: 25px;
+    font-weight: 800;
+    box-shadow: 0 0 25px rgba(255,128,200,.22);
+    transform: rotate(-8deg);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    50% { translate: 0 -5px; }
+}
+
+/* ORIGINAL HEADINGS */
+
+h2 {
+    text-align: center;
+    font-size: 25px;
+    margin: 0 0 8px;
+    letter-spacing: -.6px;
+}
+
+.sub {
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 0 0 25px;
+}
+
+.screen {
+    display: none;
+    flex-direction: column;
+    animation: screenEnter .4s ease both;
+}
+
+.screen.active {
+    display: flex;
+}
+
+@keyframes screenEnter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ORIGINAL INPUTS */
+
+.field {
+    display: block;
+    font-size: 11px;
+    color: #d4c2e5;
+    margin: 0 0 8px;
+    letter-spacing: .6px;
+}
+
+.inputwrap {
+    position: relative;
+    margin-bottom: 17px;
+}
+
+.inputwrap input {
+    width: 100%;
+    height: 47px;
+    padding: 0 13px;
+    background: rgba(6,10,18,.65);
+    border: 1px solid rgba(255,128,200,.20);
+    border-radius: 10px;
+    color: white;
+    outline: none;
+    transition: .25s;
+    font-size: 14px;
+}
+
+.inputwrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,128,200,.12);
+}
+
+.inputwrap input::placeholder {
+    color: #8d7d9d;
+}
+
+/* ORIGINAL BUTTON */
+
+.submit {
+    width: 100%;
+    height: 47px;
+    border: 0;
+    border-radius: 10px;
+    color: #1c1028;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    background: linear-gradient(
+        110deg, var(--accent), var(--accent2)
+    );
+    box-shadow: 0 8px 25px rgba(255,128,200,.18);
+    transition: transform .2s, filter .2s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.submit:hover {
+    filter: brightness(1.12);
+    transform: translateY(-2px);
+}
+
+.submit:active {
+    transform: scale(.98);
+}
+
+.submit::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -35%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255,255,255,.5);
+    transform: rotate(25deg);
+    animation: buttonshine 4s infinite;
+    pointer-events: none;
+}
+
+@keyframes buttonshine {
+    0%,65% { left: -35%; }
+    100% { left: 130%; }
+}
+
+/* ORIGINAL FOOTER */
+
+.foot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    margin-top: 19px;
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 9px var(--accent);
+}
+
+.status {
+    text-align: center;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 14px;
+    min-height: 12px;
+}
+
+/* ORIGINAL OTP DISPLAY */
+
+.data-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 22px 14px;
+    border: 1px solid rgba(255,128,200,.20);
+    border-radius: 15px;
+    background: rgba(6,10,18,.45);
+}
+
+.data-label {
+    font-size: 11px;
+    color: #d4c2e5;
+    letter-spacing: 1.5px;
+}
+
+#otp-code {
+    font-family: Consolas, monospace;
+    font-size: clamp(27px, 8vw, 35px);
+    font-weight: 700;
+    color: white;
+    letter-spacing: 5px;
+    overflow-wrap: anywhere;
+    text-shadow: 0 0 15px rgba(255,128,200,.3);
+    font-variant-numeric: tabular-nums;
+}
+
+#otp-timer {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.progress-track {
+    width: 100%;
+    height: 5px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: rgba(255,255,255,.09);
+}
+
+#otp-bar {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg,var(--accent),var(--accent2));
+    box-shadow: 0 0 10px rgba(255,128,200,.35);
+    transition: width .2s linear;
+}
+
+#otp-msg {
+    min-height: 24px;
+    margin-top: 12px;
+    text-align: center;
+    font-size: 11px;
+    color: #a6ffe0;
+}
+
+/* NEW: RIGHT-SIDE SAVED CODES OPTION */
+
+.saved-codes-btn {
+    display: none;
+    position: absolute;
+    top: 39px;
+    right: 27px;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255,128,200,.4);
+    background: rgba(10,8,24,.45);
+    color: var(--accent);
+    font-size: 25px;
+    cursor: pointer;
+    z-index: 10;
+    transition: .25s;
+    box-shadow: 0 0 18px rgba(255,128,200,.08);
+}
+
+.container.auth-open .saved-codes-btn {
+    display: grid;
+    place-items: center;
+}
+
+.saved-codes-btn:hover {
+    background: rgba(255,128,200,.12);
+    box-shadow: 0 0 22px rgba(255,128,200,.25);
+    transform: scale(1.06);
+}
+
+.saved-codes-btn:active {
+    transform: scale(.96);
+}
+
+/* NEW: SAVED CODES POPUP */
+
+.codes-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    padding: 20px;
+    background: rgba(5,4,15,.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    align-items: center;
+    justify-content: center;
+}
+
+.codes-modal.open {
+    display: flex;
+    animation: screenEnter .3s ease both;
+}
+
+.codes-panel {
+    width: min(365px,100%);
+    max-height: 85dvh;
+    overflow-y: auto;
+    padding: 25px 20px;
+    border: 1px solid rgba(255,128,200,.4);
+    border-radius: 24px;
+    background: rgba(35,18,43,.97);
+    box-shadow: 0 20px 70px rgba(0,0,0,.5);
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent2) transparent;
+}
+
+.codes-panel h3 {
+    text-align: center;
+    margin: 0 0 8px;
+    font-size: 22px;
+}
+
+.codes-description {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0 0 20px;
+}
+
+.saved-code {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    border: 1px solid rgba(255,128,200,.17);
+    border-radius: 10px;
+    background: rgba(6,10,18,.55);
+    color: #fff;
+    font-family: Consolas, monospace;
+    font-size: 19px;
+    letter-spacing: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+.saved-code button {
+    flex-shrink: 0;
+    padding: 7px 9px;
+    border: 1px solid rgba(255,128,200,.22);
+    border-radius: 7px;
+    background: rgba(255,128,200,.09);
+    color: var(--accent);
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: .5px;
+    cursor: pointer;
+}
+
+.saved-code button:active {
+    transform: scale(.96);
+}
+
+.codes-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.codes-actions button {
+    flex: 1;
+    min-height: 43px;
+    border: 0;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .6px;
+    cursor: pointer;
+}
+
+#copy-all-codes {
+    color: #1c1028;
+    background: linear-gradient(110deg,#ff80c8,#9b8cff);
+}
+
+#close-codes {
+    color: #f3f7ff;
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,128,200,.25);
+}
+
+#codes-msg {
+    min-height: 14px;
+    margin-top: 12px;
+    text-align: center;
+    color: #a6ffe0;
+    font-size: 11px;
+}
+
+@media (max-width: 380px) {
+    body {
+        padding: 12px;
+    }
+
+    .container {
+        padding: 26px 21px;
+        max-height: calc(100dvh - 24px);
+    }
+
+    #otp-code {
+        letter-spacing: 3px;
+    }
+
+    .saved-codes-btn {
+        top: 35px;
+        right: 22px;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="ambient" aria-hidden="true"></div>
+
+<div class="container" id="main-container">
+
+    <!-- SAVED CODES BUTTON: ONLY VISIBLE ON AUTHENTICATOR SCREEN -->
+    <button
+        id="saved-codes-btn"
+        class="saved-codes-btn"
+        type="button"
+        aria-label="Open saved codes"
+        title="Backup Codes"
+    >▤</button>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="screen active">
+
+        <div class="brand">
+            <div class="logo">✿</div>
+        </div>
+
+        <h2>HEY MAN</h2>
+
+        <p class="sub">
+            Pick up right where you left off.<br>
+            Your space is ready.
+        </p>
+
+        <label class="field" for="username-input">
+            USERNAME / EMAIL
+        </label>
+
+        <div class="inputwrap">
+            <input
+                id="username-input"
+                type="text"
+                placeholder="USERNAME"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+            >
+        </div>
+
+        <label class="field" for="password-input">
+            PASSWORD
+        </label>
+
+        <div class="inputwrap">
+            <input
+                id="password-input"
+                type="password"
+                placeholder="PASSWORD"
+                autocomplete="current-password"
+                required
+            >
+        </div>
+
+        <button class="submit" id="login-btn" type="button">
+            LET'S GO ✦
+        </button>
+
+        <div class="foot">
+            <span class="dot"></span>
+            <span>MADE FOR KAMZ</span>
+        </div>
+
+        <div class="status" id="login-msg" role="status" aria-live="polite">
+            AURORA LOGIN 
+        </div>
+
+    </div>
+
+    <!-- AUTHENTICATOR SCREEN -->
+    <div id="auth-screen" class="screen">
+
+        <div class="brand">
+            <div class="logo">✿</div>
+        </div>
+
+        <h2>Authenticator</h2>
+
+        <p class="sub">
+            Your Verification Code Is Ready.<br>
+            Keep Your Code Private And Secure.
+        </p>
+
+        <div class="data-box">
+            <span class="data-label">VERIFICATION CODE</span>
+
+            <span id="otp-code">------</span>
+
+            <span id="otp-timer">Loading...</span>
+
+            <div class="progress-track">
+                <div id="otp-bar"></div>
+            </div>
+        </div>
+
+        <button class="submit" id="copy-code" type="button">
+            COPY ✦
+        </button>
+
+        <div class="status" id="otp-msg" role="status" aria-live="polite"></div>
+
+    </div>
+
+</div>
+
+<!-- SAVED CODES POPUP -->
+<div
+    id="codes-modal"
+    class="codes-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="codes-title"
+>
+    <div class="codes-panel">
+
+        <h3 id="codes-title">BACKUP Codes</h3>
+
+        <p class="codes-description">
+            Your saved codes in one place.
+        </p>
+
+        <div id="saved-code-list"></div>
+
+        <div class="codes-actions">
+            
+
+            <button id="close-codes" type="button">
+                CLOSE
+            </button>
+        </div>
+
+        <div id="codes-msg" role="status" aria-live="polite"></div>
+
+    </div>
+</div>
+
+<script>
+/* LOGIN SETTINGS — ORIGINAL VALUES */
+
+const LOGIN_USERNAME = "kamrul2vai";
+const LOGIN_PASSWORD = "K@mrul-2V@i";
+
+/* ORIGINAL TOTP SECRET */
+const SECRET = "blqi k2e7 56if wwid 5ljt d6vt qamf 4262";
+
+const mainContainer = document.getElementById("main-container");
+const loginScreen = document.getElementById("login-screen");
+const authScreen = document.getElementById("auth-screen");
+const usernameInput = document.getElementById("username-input");
+const passInput = document.getElementById("password-input");
+const loginMsg = document.getElementById("login-msg");
+
+function showAuth() {
+    loginScreen.classList.remove("active");
+    authScreen.classList.add("active");
+    mainContainer.classList.add("auth-open");
+
+    usernameInput.value = "";
+    passInput.value = "";
+
+    updateOTP();
+}
+
+function attemptLogin() {
+    if (
+        usernameInput.value.trim() === LOGIN_USERNAME &&
+        passInput.value === LOGIN_PASSWORD
+    ) {
+        loginMsg.textContent = "";
+        showAuth();
+    } else {
+        loginMsg.textContent = "INVALID USERNAME OR PASSWORD";
+
+        setTimeout(() => {
+            if (loginScreen.classList.contains("active")) {
+                loginMsg.textContent = "AURORA LOGIN ";
+            }
+        }, 2000);
+    }
+}
+
+document.getElementById("login-btn")
+    .addEventListener("click", attemptLogin);
+
+usernameInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        passInput.focus();
+    }
+});
+
+passInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        attemptLogin();
+    }
+});
+
+
+/* BASE32 DECODER — RFC 4648 */
+function base32Decode(input) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    const clean = String(input).toUpperCase().replace(/[\s=]/g, "");
+
+    if (!clean) throw new Error("Secret key is empty.");
+    if (!/^[A-Z2-7]+$/.test(clean)) {
+        throw new Error("Invalid Base32 secret. Check the key and remove spaces or unsupported characters.");
+    }
+
+    let bits = "";
+    const output = [];
+    for (const char of clean) {
+        bits += alphabet.indexOf(char).toString(2).padStart(5, "0");
+    }
+    for (let i = 0; i + 8 <= bits.length; i += 8) {
+        output.push(parseInt(bits.slice(i, i + 8), 2));
+    }
+    if (!output.length) throw new Error("Secret key is too short.");
+    return new Uint8Array(output);
+}
+
+/* PURE-JAVASCRIPT SHA-1 — no Web Crypto API */
+function sha1(message) {
+    const length = message.length;
+    const paddedLength = Math.ceil((length + 9) / 64) * 64;
+    const data = new Uint8Array(paddedLength);
+    data.set(message);
+    data[length] = 0x80;
+
+    const view = new DataView(data.buffer);
+    const bitLength = length * 8;
+    view.setUint32(paddedLength - 8, Math.floor(bitLength / 0x100000000));
+    view.setUint32(paddedLength - 4, bitLength >>> 0);
+
+    let h0 = 0x67452301;
+    let h1 = 0xEFCDAB89;
+    let h2 = 0x98BADCFE;
+    let h3 = 0x10325476;
+    let h4 = 0xC3D2E1F0;
+    const words = new Uint32Array(80);
+    const rotateLeft = (x, n) => (x << n) | (x >>> (32 - n));
+
+    for (let offset = 0; offset < paddedLength; offset += 64) {
+        for (let i = 0; i < 16; i++) words[i] = view.getUint32(offset + i * 4);
+        for (let i = 16; i < 80; i++) {
+            words[i] = rotateLeft(words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16], 1) >>> 0;
+        }
+
+        let a = h0, b = h1, c = h2, d = h3, e = h4;
+        for (let i = 0; i < 80; i++) {
+            let f, k;
+            if (i < 20) { f = (b & c) | (~b & d); k = 0x5A827999; }
+            else if (i < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
+            else if (i < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
+            else { f = b ^ c ^ d; k = 0xCA62C1D6; }
+
+            const temp = (rotateLeft(a, 5) + f + e + k + words[i]) >>> 0;
+            e = d; d = c; c = rotateLeft(b, 30) >>> 0; b = a; a = temp;
+        }
+        h0 = (h0 + a) >>> 0;
+        h1 = (h1 + b) >>> 0;
+        h2 = (h2 + c) >>> 0;
+        h3 = (h3 + d) >>> 0;
+        h4 = (h4 + e) >>> 0;
+    }
+
+    const output = new Uint8Array(20);
+    const result = new DataView(output.buffer);
+    [h0, h1, h2, h3, h4].forEach((value, i) => result.setUint32(i * 4, value));
+    return output;
+}
+
+/* HMAC-SHA1 */
+function hmacSha1(key, message) {
+    if (key.length > 64) key = sha1(key);
+    const paddedKey = new Uint8Array(64);
+    paddedKey.set(key);
+
+    const inner = new Uint8Array(64 + message.length);
+    const outer = new Uint8Array(64 + 20);
+    for (let i = 0; i < 64; i++) {
+        inner[i] = paddedKey[i] ^ 0x36;
+        outer[i] = paddedKey[i] ^ 0x5c;
+    }
+    inner.set(message, 64);
+    outer.set(sha1(inner), 64);
+    return sha1(outer);
+}
+
+/* TOTP — RFC 6238 / RFC 4226: 6 digits, 30 seconds */
+function generateOTP(secret, timestampMs = Date.now()) {
+    if (!Number.isFinite(timestampMs) || timestampMs < 0) {
+        throw new Error("Invalid system time.");
+    }
+    const key = base32Decode(secret);
+    const counter = Math.floor(timestampMs / 1000 / 30);
+    const message = new Uint8Array(8);
+    const view = new DataView(message.buffer);
+    view.setUint32(0, Math.floor(counter / 0x100000000));
+    view.setUint32(4, counter >>> 0);
+
+    const hash = hmacSha1(key, message);
+    const offset = hash[hash.length - 1] & 0x0f;
+    const binary = ((hash[offset] & 0x7f) * 0x1000000)
+        + (hash[offset + 1] << 16)
+        + (hash[offset + 2] << 8)
+        + hash[offset + 3];
+
+    return String(binary % 1000000).padStart(6, "0");
+}
+
+/* UPDATE OTP AND TIMER — synchronized to the same 30-second counter */
+function updateOTP() {
+    const codeElement = document.getElementById("otp-code");
+    const timerElement = document.getElementById("otp-timer");
+    const bar = document.getElementById("otp-bar");
+
+    try {
+        const now = Date.now();
+        const elapsed = Math.floor(now / 1000) % 30;
+        const remaining = 30 - elapsed;
+        codeElement.textContent = generateOTP(SECRET, now);
+        timerElement.textContent = "New code in " + remaining + " seconds";
+        bar.style.width = (remaining / 30 * 100) + "%";
+    } catch (error) {
+        codeElement.textContent = "------";
+        timerElement.textContent = error.message || "Could not generate code";
+        bar.style.width = "0%";
+    }
+}
+
+setInterval(() => {
+    if (authScreen.classList.contains("active")) updateOTP();
+}, 250);
+
+
+/* ORIGINAL COPY OTP BUTTON */
+
+document.getElementById("copy-code")
+    .addEventListener("click", async () => {
+
+        const code = document.getElementById("otp-code").textContent;
+        const message = document.getElementById("otp-msg");
+
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(code);
+            } else {
+                const textarea = document.createElement("textarea");
+
+                textarea.value = code;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+
+                document.body.appendChild(textarea);
+                textarea.select();
+
+                const copied = document.execCommand("copy");
+                textarea.remove();
+
+                if (!copied) {
+                    throw new Error("Copy unavailable");
+                }
+            }
+
+            message.textContent = "CODE COPIED";
+
+            setTimeout(() => {
+                message.textContent = "";
+            }, 1500);
+
+        } catch (error) {
+            message.textContent =
+                "Copy unavailable. Please copy manually.";
+        }
+    });
+
+
+/* NEW: YOUR 10 SAVED CODES */
+
+const savedCodes = [
+    "7242 4907",
+    "4947 0464",
+    "8427 1282",
+    "4105 1534",
+    "8027 5421",
+    "6093 4353",
+    "0983 3631",
+    "0951 1342",
+    "1423 1103",
+    "9983 4677"
+];
+
+const codesModal = document.getElementById("codes-modal");
+const savedCodeList = document.getElementById("saved-code-list");
+const codesMsg = document.getElementById("codes-msg");
+
+/* Build the list safely */
+
+savedCodes.forEach((code, index) => {
+    const row = document.createElement("div");
+    row.className = "saved-code";
+
+    const number = document.createElement("span");
+    number.textContent = code;
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.textContent = "COPY";
+
+    copyButton.addEventListener("click", async () => {
+        const success = await copyText(code);
+
+        codesMsg.textContent = success
+            ? "CODE COPIED ✓"
+            : "Copy unavailable. Please copy manually.";
+
+        if (success) {
+            copyButton.textContent = "COPIED ✓";
+
+            setTimeout(() => {
+                copyButton.textContent = "COPY";
+            }, 1200);
+        }
+    });
+
+    row.appendChild(number);
+    row.appendChild(copyButton);
+    savedCodeList.appendChild(row);
+});
+
+
+/* Copy helper */
+
+async function copyText(text) {
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        }
+    } catch (error) {
+        /* Try fallback below */
+    }
+
+    try {
+        const textarea = document.createElement("textarea");
+
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        const success = document.execCommand("copy");
+        textarea.remove();
+
+        return success;
+    } catch (error) {
+        return false;
+    }
+}
+
+
+/* Open and close Saved Codes */
+
+document.getElementById("saved-codes-btn")
+    .addEventListener("click", () => {
+        codesMsg.textContent = "";
+        codesModal.classList.add("open");
+    });
+
+function closeCodesModal() {
+    codesModal.classList.remove("open");
+}
+
+document.getElementById("close-codes")
+    .addEventListener("click", closeCodesModal);
+
+codesModal.addEventListener("click", event => {
+    if (event.target === codesModal) {
+        closeCodesModal();
+    }
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        closeCodesModal();
+    }
+});
+
+
+
+
+</script>
+
+</body>
+</html>
